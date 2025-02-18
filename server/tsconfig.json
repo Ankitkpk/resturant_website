@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "rootDir": "./src",
+    "esModuleInterop": true, 
+    "baseUrl": "./",
+    "paths": {
+      "*": ["node_modules", "config/*"]
+    }
+  },
+  "include": [
+    "src/**/*",
+    "config/**/*"  // Add this line to include the 'config' folder
+  ]
+}
