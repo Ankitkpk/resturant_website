@@ -10,12 +10,15 @@ interface IUser extends Document {
   country: string;
   profilePicture: string;
   admin: boolean;
+  //optional//
   lastLogin?:Date;
-  isVerified:boolean;
-  resetPasswordToken:string,
-  resetPasswordTokenExpiresAt:Date,
-  verificationToken:string,
-  verificationTokenExpiresAt:Date,
+  isVerified?:boolean;
+  resetPasswordToken?:string,
+  resetPasswordTokenExpiresAt?:Date,
+  verificationToken?:string,
+  verificationTokenExpiresAt?:Date,
+  createdAt?: Date; 
+  updatedAt?: Date; 
 }
 
 const userSchema: Schema<IUser> = new Schema(
