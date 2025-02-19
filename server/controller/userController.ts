@@ -55,7 +55,7 @@ export const SignUp = async (req: Request, res: Response): Promise<any> => {
     }
 };
 
-export const Login = async (req: Request, res: Response): Promise<Response> => {
+export const Login = async (req: Request, res: Response):  Promise<any> => {
     const { email, password } = req.body;
 
     try {
@@ -82,7 +82,7 @@ export const Login = async (req: Request, res: Response): Promise<Response> => {
 };
 
 
-export const VerifyEmail = async (req: Request, res: Response): Promise<Response> => {
+export const VerifyEmail = async (req: Request, res: Response):  Promise<any> => {
     const { verificationCode } = req.body;
     try {
         const user = await User.findOne({
@@ -108,7 +108,7 @@ export const VerifyEmail = async (req: Request, res: Response): Promise<Response
     }
 };
 
-export const Logout = async (req: Request, res: Response): Promise<Response> => {
+export const Logout = async (req: Request, res: Response):  Promise<any> => {
     try {
         res.clearCookie("token", {
             httpOnly: true,
@@ -124,7 +124,7 @@ export const Logout = async (req: Request, res: Response): Promise<Response> => 
 };
 
 
-export const forgetPassword = async (req: Request, res: Response): Promise<Response> => {
+export const forgetPassword = async (req: Request, res: Response):  Promise<any> => {
     const { email } = req.body;
 
     try {
@@ -154,7 +154,7 @@ export const forgetPassword = async (req: Request, res: Response): Promise<Respo
 
 
 
-export const ResetPassword = async (req: Request, res: Response): Promise<Response> => {
+export const ResetPassword = async (req: Request, res: Response):  Promise<any> => {
     const { token } = req.params; 
     const { newPassword } = req.body; 
 
@@ -192,7 +192,7 @@ export const ResetPassword = async (req: Request, res: Response): Promise<Respon
     }
 };
 
-export const checkAuth = async (req: Request, res: Response): Promise<Response> => {
+export const checkAuth = async (req: Request, res: Response):  Promise<any> => {
     try {
         const userId = req.id;
         if (!userId) {
@@ -211,7 +211,7 @@ export const checkAuth = async (req: Request, res: Response): Promise<Response> 
     }
 }
 
-export const UploadPhoto = async (req: Request, res: Response): Promise<Response> => {
+export const ProfileUpdate = async (req: Request, res: Response): Promise<any> => {
     try {
         const userId = req.id;
         if (!userId) {
