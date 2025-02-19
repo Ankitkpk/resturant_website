@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import User from "../models/userModel";
 import {generateResetToken} from '../utils/token'
+import cloudinary from '../utils/cloudinary'
+import {generateVerificationCode} from '../utils/generateVerification'
+import {generateToken} from '../utils/generateToken'
 import crypto from "crypto"
 import bcrypt from 'bcryptjs';
 
@@ -23,9 +26,9 @@ export const SignUp = async (req: Request, res: Response): Promise<any> => {
         // Hash the password using bcrypt
         const salt = await bcrypt.genSalt(10); // Generate a salt
         const hashedPassword = await bcrypt.hash(password, salt); // Hash the password
-        const verificationToken="ankits"; //generateverificationToken();
+        const verificationToken=generateVerificationCode();
         // Create a new user object
-        const newUser = new User({
+        const user = new User({
             name,
             email,
             password: hashedPassword,
@@ -35,14 +38,14 @@ export const SignUp = async (req: Request, res: Response): Promise<any> => {
 
 
         });
-      //generateToken(req,user)//
+        generateToken(res,user)//
       // await sendvericationemail(email,verificationToken);//
        
-        await newUser.save();
+        await user.save();
 
         return res.status(200).json({
             success: true,
-            newUser,
+            user,
             message: "Sign-up successful",
             
         });
@@ -128,7 +131,6 @@ export const forgetPassword = async (req: Request, res: Response): Promise<Respo
         if (!email) {
             return res.status(400).json({ message: "Email is required" });
         }
-
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({ message: "User not found" });
@@ -141,7 +143,7 @@ export const forgetPassword = async (req: Request, res: Response): Promise<Respo
 
         await user.save();
         const resetLink = `${process.env.CLIENT_URL}/resetpassword/${resetToken}`;
-        await sendPasswordResetEmail(user.email, resetLink);
+      //  await sendPasswordResetEmail(user.email, resetLink);
 
         return res.status(200).json({ message: "Password reset link sent successfully" });
     } catch (error) {
@@ -197,7 +199,7 @@ export const checkAuth = async (req: Request, res: Response): Promise<Response> 
             return res.status(401).json({ success: false, message: "Unauthorized: User ID not found" });
         }
 
-        const user = await User.findById(userId);
+        const user = await User.findById(userId).select("-password");
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
         }
@@ -208,3 +210,45 @@ export const checkAuth = async (req: Request, res: Response): Promise<Response> 
         return res.status(500).json({ success: false, message: "Server error" });
     }
 }
+
+export const UploadPhoto = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const userId = req.id;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthorized: User ID not found" });
+        }
+
+        const { name, email, contact, address, city, country,profilePicture} = req.body;
+
+        if (profilePicture) {
+            return res.status(400).json({ success: false, message: "Profile picture is required" });
+        }
+
+        // Upload image to Cloudinary
+        let cloudinaryResponse;
+        try {
+            cloudinaryResponse = await cloudinary.uploader.upload(profilePicture, {
+
+            });
+        } catch (error) {
+            console.error("Cloudinary upload error:", error);
+            return res.status(500).json({ success: false, message: "Failed to upload image" });
+        }
+
+        
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { name, email, contact, address, city, country, profilePicture: cloudinaryResponse.secure_url },
+            { new: true } // Return updated user
+        ).select("-password");
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        return res.status(200).json({ success: true, message: "Profile updated successfully", user });
+    } catch (error) {
+        console.error("Error in UploadPhoto:", error);
+        return res.status(500).json({ success: false, message: "Server error" });
+    }
+};
