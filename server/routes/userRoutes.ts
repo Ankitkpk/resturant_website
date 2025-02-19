@@ -1,18 +1,16 @@
-import express from 'express';
-import {SignUp} from '../controller/userController';
-import {VerifyEmail} from '../controller/userController';
-import {Logout} from '../controller/userController';
-import {forgetPassword} from '../controller/userController';
-import {ResetPassword } from '../controller/userController';
-import {ProfileUpdate} from '../controller/userController';
-import {AuthenticatedUser} from '../middlewares/isAuthenticated';
-const router=express.Router();
+import express from "express";
+import { checkAuth,SignUp,Login,VerifyEmail,forgetPassword,ResetPassword,Logout,ProfileUpdate} from "../controller/userController";
+import { AuthenticatedUser} from "../middlewares/isAuthenticated";
 
-router.route("/signup").post(SignUp);
+const router = express.Router();
+
+router.route("/check-auth").get(AuthenticatedUser, checkAuth);
+router.route("/SignUp").post(SignUp);
+router.route("/Login").post(Login);
 router.route("/Logout").post(Logout);
-router.route("/VerifyEmail").post(VerifyEmail);
-router.route("/forgetPassword").post(forgetPassword);
-router.route("/ResetPassword/:token").post(ResetPassword);
-router.route("/ProfileUpdate").put(AuthenticatedUser,ProfileUpdate);
+router.route("/verify-email").post(VerifyEmail);
+router.route("/forgetPassword ").post(forgetPassword);
+router.route("/reset-password/:token").post(ResetPassword);
+router.route("/profile/update").put(AuthenticatedUser,ProfileUpdate);
 
 export default router;

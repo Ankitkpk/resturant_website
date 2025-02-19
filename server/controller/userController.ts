@@ -4,7 +4,7 @@ import {generateResetToken} from '../utils/token'
 import cloudinary from '../utils/cloudinary'
 import {generateVerificationCode} from '../utils/generateVerification'
 import {generateToken} from '../utils/generateToken'
-import crypto from "crypto"
+
 import bcrypt from 'bcryptjs';
 
 export const SignUp = async (req: Request, res: Response): Promise<any> => {

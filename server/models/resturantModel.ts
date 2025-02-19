@@ -25,8 +25,7 @@ const restaurantSchema = new Schema<IRestaurantDocument>(
         },
         restaurantName: {
             type: String,
-            required: true,
-
+            required: true
         },
         city: {
             type: String,
@@ -47,7 +46,6 @@ const restaurantSchema = new Schema<IRestaurantDocument>(
             {
                 type: String,
                 required: true,
-               
             },
         ],
         menus: [
@@ -59,6 +57,7 @@ const restaurantSchema = new Schema<IRestaurantDocument>(
         imageUrl: {
             type: String,
             required: true,
+
         },
     },
     { timestamps: true }
