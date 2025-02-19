@@ -14,3 +14,5 @@ router.route("/VerifyEmail").post(VerifyEmail);
 router.route("/forgetPassword").post(forgetPassword);
 router.route("/ResetPassword/:token").post(ResetPassword);
 router.route("/ProfileUpdate").put(AuthenticatedUser,ProfileUpdate);
+
+export default router;
