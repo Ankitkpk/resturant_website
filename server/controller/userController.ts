@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import User from "../models/userModel";
 import {generateResetToken} from '../utils/token'
+import crypto from "crypto"
 import bcrypt from 'bcryptjs';
 
 export const SignUp = async (req: Request, res: Response): Promise<any> => {
@@ -120,26 +121,69 @@ export const Logout = async (req: Request, res: Response): Promise<Response> => 
 };
 
 
-export const forgetPassword = async (req: Request, res: Response): Promise<any> => {
+export const forgetPassword = async (req: Request, res: Response): Promise<Response> => {
     const { email } = req.body;
-  
+
     try {
-      if (!email) {
-        return res.status(400).json({ message: "Email is required" });
-      }
-  
-      const user = await User.findOne({ email }); // Correct database query
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-  
-       user.resetPasswordToken = generateResetToken();
-       user.resetPasswordTokenExpiresAt = new Date(Date.now() + 1 * 60 * 60 * 1000); //1hour
-       user.save();
-       await sendPasswordResetEmail(user.email ,`${process.env.CLIENT_URL}/resetpassword/${token}`)
-      return res.status(200).json({ message: "Password reset link sent successfully" });
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Generate reset token and expiry time
+        const resetToken = generateResetToken();
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordTokenExpiresAt = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1 hour
+
+        await user.save();
+        const resetLink = `${process.env.CLIENT_URL}/resetpassword/${resetToken}`;
+        await sendPasswordResetEmail(user.email, resetLink);
+
+        return res.status(200).json({ message: "Password reset link sent successfully" });
     } catch (error) {
-      console.error("Error in forgetPassword:", error);
-      return res.status(500).json({ message: "Server error" });
+        console.error("Error in forgetPassword:", error);
+        return res.status(500).json({ message: "Server error" });
     }
-  };
+};
+
+
+
+export const ResetPassword = async (req: Request, res: Response): Promise<Response> => {
+    const { token } = req.params; // Get token from URL
+    const { newPassword } = req.body; // Get new password
+
+    try {
+        if (!newPassword) {
+            return res.status(400).json({ message: "New password is required" });
+        }
+
+        // Find user by reset token
+        const user = await User.findOne({
+            resetPasswordToken: token,
+            resetPasswordTokenExpiresAt: { $gt: new Date() } // Check if token is still valid
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: "Invalid or expired token" });
+        }
+
+        // Hash new password
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(newPassword, salt);
+
+        // Clear reset token fields
+        user.resetPasswordToken = undefined;
+        user.resetPasswordTokenExpiresAt = undefined;
+
+        await user.save();
+
+        return res.status(200).json({ message: "Password reset successful!" });
+    } catch (error) {
+        console.error("Error in ResetPassword:", error);
+        return res.status(500).json({ message: "Server error" });
+    }
+};
