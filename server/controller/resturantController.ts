@@ -121,12 +121,19 @@ export const updateOrderStatus = async (req: Request, res: Response): Promise<an
 
 export const searchRestaurant = async (req: Request, res: Response): Promise<any> => {
     try {
+        //first search//
         const searchText = req.params.searchText || "";
-        const searchQuery = (req.query.searchQuery as string) || "";
+        //second search//
+        const searchQuery = req.query.searchQuery as string || "";
+        //third search//
+        //cusines are stored in arrau format in database//
         const selectedCuisines = (req.query.selectedCuisines as string || "").split(",").filter(c => c.trim() !== "");
+        //["momos,burger"]
+        console.log(selectedCuisines);
 
-        const query: any = { $or: [] };
-
+        const query:any = { $or: [] };
+        //create a query object and saerch based on query//
+        //first filter based on searchText(name,city,branch)//
         if (searchText) {
             query.$or.push(
                 { restaurantName: { $regex: searchText, $options: 'i' } },
@@ -134,7 +141,7 @@ export const searchRestaurant = async (req: Request, res: Response): Promise<any
                 { country: { $regex: searchText, $options: 'i' } }
             );
         }
-
+    //second filter based on  searcquery//
         if (searchQuery) {
             query.$or.push(
                 { restaurantName: { $regex: searchQuery, $options: 'i' } },
@@ -145,7 +152,7 @@ export const searchRestaurant = async (req: Request, res: Response): Promise<any
         if (selectedCuisines.length > 0) {
             query.cuisines = { $in: selectedCuisines };
         }
-
+        console.log(query);
         const restaurants = await Restaurant.find(query);
         return res.status(200).json({ success: true, data: restaurants });
     } catch (error) {
