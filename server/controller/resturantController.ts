@@ -161,13 +161,22 @@ export const searchRestaurant = async (req: Request, res: Response): Promise<any
     }
 };
 
+import mongoose from "mongoose";
+
 export const getSingleRestaurant = async (req: Request, res: Response): Promise<any> => {
     try {
-        const restaurantId = req.params.id;
-        const restaurant = await Restaurant.findById(restaurantId).populate({
-            path: 'menus',
-            options: { sort: { createdAt: -1 } }
-        });
+        const { id: restaurantId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
+            return res.status(400).json({ success: false, message: "Invalid restaurant ID" });
+        }
+
+        const restaurant = await Restaurant.findById(restaurantId)
+            .populate({
+                path: 'menus',
+                options: { sort: { createdAt: -1 } },
+            })
+            .lean();
 
         if (!restaurant) {
             return res.status(404).json({ success: false, message: "Restaurant not found" });
@@ -175,7 +184,7 @@ export const getSingleRestaurant = async (req: Request, res: Response): Promise<
 
         return res.status(200).json({ success: true, restaurant });
     } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: "Internal server error" });
+        console.error("Error in getSingleRestaurant:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
