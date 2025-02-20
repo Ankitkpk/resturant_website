@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Restaurant from "../models/resturantModel";
 import uploadImageOnCloudinary from "../utils/imageUpload";
+import mongoose from 'mongoose';
 import {Multer} from 'multer';
 
 import Order from "../models/orderModel";
@@ -160,8 +161,6 @@ export const searchRestaurant = async (req: Request, res: Response): Promise<any
         return res.status(500).json({ message: "Internal server error" });
     }
 };
-
-import mongoose from "mongoose";
 
 export const getSingleRestaurant = async (req: Request, res: Response): Promise<any> => {
     try {
