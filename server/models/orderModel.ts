@@ -5,6 +5,7 @@ type DeliveryDetails = {
   email: string;
   name: string;
   address: string;
+  city: string;
 };
 
 type CartItems = {
@@ -33,6 +34,7 @@ const orderSchema: Schema<IOrder> = new Schema(
     deliveryDetails: {
       email: { type: String, required: true },
       name: { type: String, required: true },
+      city:{type:String , required:true},
       address: { type: String, required: true }
     },
     //since many cartItems will be theirfore array//
