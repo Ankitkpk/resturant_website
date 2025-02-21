@@ -21,8 +21,7 @@ type CheckoutSessionRequest = {
 };
 
 //get allOders by user//
-import { Request, Response } from "express";
-import Order from "../models/orderModel";
+
 
 export const getOrders = async (req: Request, res: Response): Promise<any> => {
   try {
@@ -37,7 +36,7 @@ export const getOrders = async (req: Request, res: Response): Promise<any> => {
     }
 
     // Find orders for the given user ID and populate the "user" field
-    const orders = await Order.find({ user: userId }).populate("user");
+    const orders = await Order.find({ user: userId }).populate("user").populate('Restaurant');
 
     res.status(200).json({
       success: true,

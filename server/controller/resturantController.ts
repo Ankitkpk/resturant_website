@@ -9,7 +9,7 @@ import Order from "../models/orderModel";
 export const createRestaurant = async (req: Request, res: Response): Promise<any> => {
     try {
         const { restaurantName, city, country, deliveryTime, cuisines } = req.body;
-        const file = req.file as Express.Multer.File | undefined;
+        const file = req.file as  Express.Multer.File | undefined;
 
         const restaurantExists = await Restaurant.findOne({ user: req.id });
         if (restaurantExists) {

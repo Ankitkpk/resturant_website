@@ -14,7 +14,7 @@ export const addMenu = async (req:Request, res:Response):Promise<any> => {
                 message:"Image is required"
             })
         };
-        const imageUrl = await uploadImageOnCloudinary(file as Express.Multer.File);
+        const imageUrl = await uploadImageOnCloudinary(req.file as Express.Multer.File);
         const menu: any = await Menu.create({
             name , 
             description,
