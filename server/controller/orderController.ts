@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import Restaurant from "../models/resturantModel";
 import Order from "../models/orderModel";
+import Stripe from "stripe";
 
-
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 type CheckoutSessionRequest = {
   cartItems: {
     _id: string;
@@ -42,14 +43,30 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
       cartItems: checkoutSessionRequest.cartItems,
       status: "pending",
     });
-
-    await order.save(); 
-
     // Create line items
     const menuItems = restaurant.menus;
     const lineItems = await createLineItems(checkoutSessionRequest, menuItems);
-
-    res.json({ success: true, lineItems, orderId: order._id });
+    const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        shipping_address_collection: {
+            allowed_countries: ['GB', 'US', 'CA']
+        },
+        line_items: lineItems,
+        mode: 'payment',
+        success_url: `${process.env.FRONTEND_URL}/order/status`,
+        cancel_url: `${process.env.FRONTEND_URL}/cart`,
+        metadata: {
+            orderId: order._id.toString(),
+            images: JSON.stringify(menuItems.map((item: any) => item.image))
+        }
+    });
+    if (!session.url) {
+        return res.status(400).json({ success: false, message: "Error while creating session" });
+    }
+    await order.save();
+        return res.status(200).json({
+            session
+        });
 
   } catch (error: any) {
     console.error("Error in createCheckoutSession:", error);
@@ -64,7 +81,7 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
 export const createLineItems = async (req: CheckoutSessionRequest, menuItems: any[]): Promise<any[]> => {
     try {
       const lineItems = req.cartItems.map((cartItem) => {
-        const menuItem = menuItems.find((item) => item._id.toString() === cartItem._id.toString());
+        const menuItem = menuItems.find((item:any) => item._id.toString() === cartItem._id.toString());
        console.log(menuItem);
         if (!menuItem) {
           throw new Error(`Menu item with ID ${cartItem._id} not found`);
@@ -77,7 +94,7 @@ export const createLineItems = async (req: CheckoutSessionRequest, menuItems: an
               name: menuItem.name,
               description: menuItem.description || "",
             },
-            unit_amount: Math.round(menuItem.price * 100), // Convert price to cents
+            unit_amount: Math.round(menuItem.price * 100), 
           },
           quantity: cartItem.quantity,
         };
@@ -86,7 +103,7 @@ export const createLineItems = async (req: CheckoutSessionRequest, menuItems: an
       return lineItems;
     } catch (error) {
       console.error("Error in createLineItems:", error);
-      throw error; // Ensure errors are properly thrown
+      throw error; 
     }
   };
   
