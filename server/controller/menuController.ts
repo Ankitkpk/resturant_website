@@ -4,7 +4,7 @@ import Menu from '../models/menuModel';
 import Restaurant from "../models/resturantModel";
 import mongoose, { ObjectId } from "mongoose";
 
-export const addMenu = async (req:Request, res:Response) => {
+export const addMenu = async (req:Request, res:Response):Promise<any> => {
     try {
         const {name, description, price} = req.body;
         const file = req.file;
@@ -37,7 +37,7 @@ export const addMenu = async (req:Request, res:Response) => {
         return res.status(500).json({message:"Internal server error"}); 
     }
 }
-export const editMenu = async (req:Request, res:Response) => {
+export const editMenu = async (req:Request, res:Response):Promise<any> => {
     try {
         const {id} = req.params;
         const {name, description, price} = req.body;
