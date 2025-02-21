@@ -20,12 +20,45 @@ type CheckoutSessionRequest = {
   restaurantId: string;
 };
 
+//get allOders by user//
+import { Request, Response } from "express";
+import Order from "../models/orderModel";
+
+export const getOrders = async (req: Request, res: Response): Promise<any> => {
+  try {
+    // Ensure authentication middleware sets req.user
+    const userId = req.id; 
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required",
+      });
+    }
+
+    // Find orders for the given user ID and populate the "user" field
+    const orders = await Order.find({ user: userId }).populate("user");
+
+    res.status(200).json({
+      success: true,
+      orders,
+    });
+  } catch (error: any) {
+    console.error("Error in getOrders:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
+
+
 export const createCheckoutSession = async (req: Request, res: Response): Promise<any> => {
   try {
     // Define request type
     const checkoutSessionRequest: CheckoutSessionRequest = req.body;
-
-    // Find restaurant and populate menu
     const restaurant = await Restaurant.findById(checkoutSessionRequest.restaurantId).populate("menu");
 
     if (!restaurant) {
@@ -34,7 +67,7 @@ export const createCheckoutSession = async (req: Request, res: Response): Promis
         message: "Restaurant not found",
       });
     }
-
+   //createCheckoutSession order is created//
     // Create a new order
     const order = new Order({
       user: req.id, // Ensure user authentication is handled
